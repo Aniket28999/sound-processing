@@ -1,0 +1,13 @@
+#import required libraries
+import speaker_verification_toolkit.tools as svt
+import librosa
+
+#load wav file
+data,sr = librosa.load('C:\\Users\\Aniket\\anaconda3\\Lib\\site-packages\\librosa\\util\\h_1.wav',sr=16000,mono=True)
+
+#run through filter
+data = svt.rms_silence_filter(data)
+
+#extract mfcc coefficients
+data = svt.extract_mfcc(data)
+print("The MFCC Coefficients are as follow: \n",data)
