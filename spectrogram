@@ -1,0 +1,87 @@
+import spicy
+from scipy.io import wavfile
+import noisereduce as nr
+# load data
+rate, data = wavfile.read("C:\\ProgramData\\Anaconda3\\h_2.wav")
+# perform noise reduction
+reduced_noise = nr.reduce_noise(y=data, sr=rate)
+wavfile.write("mywav_reduced_noise.wav", rate, reduced_noise)
+
+
+#import all the libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pylab as plt
+import seaborn as sns
+
+from glob import glob
+
+import librosa
+import librosa.display
+import IPython.display as ipd
+
+from itertools import cycle
+
+sns.set_theme(style="white", palette=None)
+color_pal = plt.rcParams["axes.prop_cycle"].by_key()["color"]
+color_cycle = cycle(plt.rcParams["axes.prop_cycle"].by_key()["color"])
+
+
+#load the audio file for librosa
+y,sr = librosa.load('mywav_reduced_noise.wav')
+print(f'y: {y[:10]}')
+print(f'shape y: {y.shape}')
+print(f'sr: {sr}')
+
+# Raw leading graph for the audio signal
+pd.Series(y).plot(figsize=(12, 6),
+                  lw=1,
+                  title='Raw Sound Signals',
+                 color=color_pal[9])
+plt.show()
+
+# Trimming leading/lagging silence
+y_trimmed, _ = librosa.effects.trim(y, top_db=20)
+pd.Series(y_trimmed).plot(figsize=(12, 6),
+                  lw=1,
+                  title='Raw Audio Trimmed Example',
+                 color=color_pal[1])
+plt.show()
+
+#Zoomed graph on a particular region
+pd.Series(y[189900:190000]).plot(figsize=(12, 6),
+                  lw=1,
+                  title='Zoomed Sound Graph',
+                 color=color_pal[3])
+plt.show()
+
+#amplitude to decible
+D = librosa.stft(y)
+S_db = librosa.amplitude_to_db(np.abs(D), ref=np.max)
+S_db.shape
+
+#use specshow to create graph for spectrogram
+fig, ax = plt.subplots(figsize=(12, 6))
+img = librosa.display.specshow(S_db,
+                              x_axis='time',
+                              y_axis='log', sr=22050,
+                              ax=ax)
+ax.set_title('Spectogram', fontsize=20)
+fig.colorbar(img, ax=ax, format=f'%0.2f')
+plt.show()
+
+#mel spectrogram 
+S = librosa.feature.melspectrogram(y=y,
+                                   sr=sr,
+                                   n_mels=128 * 2,)
+S_db_mel = librosa.amplitude_to_db(S, ref=np.max)
+
+fig, ax = plt.subplots(figsize=(12, 6))
+# Plot the mel spectogram
+img = librosa.display.specshow(S_db_mel,
+                              x_axis='time',
+                              y_axis='log',
+                              ax=ax)
+ax.set_title('Mel Spectogram Example', fontsize=20)
+fig.colorbar(img, ax=ax, format=f'%0.2f')
+plt.show()
